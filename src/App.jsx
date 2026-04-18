@@ -16,6 +16,13 @@ const formatDate = (dateStr) => {
   return dateStr.slice(5).replace('-', '/')
 }
 
+const PRIORITY = {
+  high:   { label: '高', color: '#ff4d4f' },
+  medium: { label: '中', color: '#faad14' },
+  low:    { label: '低', color: '#1890ff' },
+  none:   { label: 'なし', color: '#ddd' },
+}
+
 const groupByDate = (tasks) => {
   const t = today()
   const groups = {}
@@ -26,7 +33,6 @@ const groupByDate = (tasks) => {
     groups[key].push(task)
   })
 
-  // ソート: 期限切れ → 今日以降（昇順）→ 日付なし
   const sorted = Object.keys(groups).sort((a, b) => {
     if (a === '__none__') return 1
     if (b === '__none__') return -1
@@ -45,16 +51,18 @@ function App() {
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     return saved ? JSON.parse(saved) : [
-      { id: 1, text: 'Reactを学ぶ', done: false, dueDate: today() },
-      { id: 2, text: 'TODOアプリを作る', done: false, dueDate: '' },
+      { id: 1, text: 'Reactを学ぶ', done: false, dueDate: today(), priority: 'high' },
+      { id: 2, text: 'TODOアプリを作る', done: false, dueDate: '', priority: 'medium' },
     ]
   })
   const [input, setInput] = useState('')
   const [inputDate, setInputDate] = useState('')
+  const [inputPriority, setInputPriority] = useState('medium')
   const [filter, setFilter] = useState('all')
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState('')
   const [editingDate, setEditingDate] = useState('')
+  const [editingPriority, setEditingPriority] = useState('medium')
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
@@ -63,9 +71,16 @@ function App() {
   const addTask = () => {
     const trimmed = input.trim()
     if (!trimmed) return
-    setTasks([...tasks, { id: Date.now(), text: trimmed, done: false, dueDate: inputDate }])
+    setTasks([...tasks, {
+      id: Date.now(),
+      text: trimmed,
+      done: false,
+      dueDate: inputDate,
+      priority: inputPriority,
+    }])
     setInput('')
     setInputDate('')
+    setInputPriority('medium')
   }
 
   const toggleTask = (id) => {
@@ -82,20 +97,21 @@ function App() {
     setEditingId(task.id)
     setEditingText(task.text)
     setEditingDate(task.dueDate || '')
+    setEditingPriority(task.priority || 'medium')
   }
 
   const saveEdit = () => {
     const trimmed = editingText.trim()
     if (!trimmed) return
     setTasks(tasks.map(task =>
-      task.id === editingId ? { ...task, text: trimmed, dueDate: editingDate } : task
+      task.id === editingId
+        ? { ...task, text: trimmed, dueDate: editingDate, priority: editingPriority }
+        : task
     ))
     setEditingId(null)
   }
 
-  const cancelEdit = () => {
-    setEditingId(null)
-  }
+  const cancelEdit = () => setEditingId(null)
 
   const filteredTasks = tasks.filter(task => {
     if (filter === 'active') return !task.done
@@ -119,15 +135,26 @@ function App() {
             onKeyDown={(e) => e.key === 'Enter' && addTask()}
             placeholder="タスクを入力..."
           />
-          <button onClick={addTask}>追加</button>
+          <button className="btn-add" onClick={addTask}>追加</button>
         </div>
-        <div className="date-row">
-          <label>締切日：</label>
-          <input
-            type="date"
-            value={inputDate}
-            onChange={(e) => setInputDate(e.target.value)}
-          />
+        <div className="input-meta">
+          <div className="meta-item">
+            <label>締切日</label>
+            <input
+              type="date"
+              value={inputDate}
+              onChange={(e) => setInputDate(e.target.value)}
+            />
+          </div>
+          <div className="meta-item">
+            <label>優先度</label>
+            <select value={inputPriority} onChange={(e) => setInputPriority(e.target.value)}>
+              <option value="high">🔴 高</option>
+              <option value="medium">🟡 中</option>
+              <option value="low">🔵 低</option>
+              <option value="none">⚪ なし</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -145,9 +172,7 @@ function App() {
       </div>
 
       {/* グループ表示 */}
-      {groups.length === 0 && (
-        <p className="empty">タスクがありません</p>
-      )}
+      {groups.length === 0 && <p className="empty">タスクがありません</p>}
       {groups.map(group => (
         <div key={group.key} className={`group ${group.overdue ? 'overdue' : ''}`}>
           <div className="group-header">
@@ -157,19 +182,20 @@ function App() {
             </span>
             <span className="group-count">{group.tasks.length}件</span>
           </div>
+
           <ul className="task-list">
             {group.tasks.map(task => (
-              <li key={task.id} className={[
-                task.done ? 'done' : '',
-                group.overdue && !task.done ? 'overdue-task' : '',
-              ].join(' ')}>
-                <input
-                  type="checkbox"
-                  checked={task.done}
-                  onChange={() => toggleTask(task.id)}
-                />
+              <li
+                key={task.id}
+                className={[
+                  task.done ? 'done' : '',
+                  group.overdue && !task.done ? 'overdue-task' : '',
+                ].join(' ')}
+                style={{ borderLeftColor: PRIORITY[task.priority || 'none'].color }}
+              >
                 {editingId === task.id ? (
-                  <div className="edit-row">
+                  /* 編集フォーム */
+                  <div className="edit-form">
                     <input
                       type="text"
                       value={editingText}
@@ -180,19 +206,50 @@ function App() {
                       }}
                       autoFocus
                     />
-                    <input
-                      type="date"
-                      value={editingDate}
-                      onChange={(e) => setEditingDate(e.target.value)}
-                    />
-                    <button className="save" onClick={saveEdit}>保存</button>
-                    <button className="cancel" onClick={cancelEdit}>キャンセル</button>
+                    <div className="edit-meta">
+                      <input
+                        type="date"
+                        value={editingDate}
+                        onChange={(e) => setEditingDate(e.target.value)}
+                      />
+                      <select value={editingPriority} onChange={(e) => setEditingPriority(e.target.value)}>
+                        <option value="high">🔴 高</option>
+                        <option value="medium">🟡 中</option>
+                        <option value="low">🔵 低</option>
+                        <option value="none">⚪ なし</option>
+                      </select>
+                      <button className="btn-save" onClick={saveEdit}>保存</button>
+                      <button className="btn-cancel" onClick={cancelEdit}>キャンセル</button>
+                    </div>
                   </div>
                 ) : (
+                  /* 通常表示 */
                   <>
-                    <span>{task.text}</span>
-                    <button className="edit" onClick={() => startEdit(task)}>編集</button>
-                    <button className="delete" onClick={() => deleteTask(task.id)}>削除</button>
+                    <input
+                      type="checkbox"
+                      checked={task.done}
+                      onChange={() => toggleTask(task.id)}
+                    />
+                    <div className="task-body">
+                      <span className="task-text">{task.text}</span>
+                      <div className="task-meta">
+                        {task.dueDate && (
+                          <span className="badge badge-date">📅 {task.dueDate.slice(5).replace('-', '/')}</span>
+                        )}
+                        {task.priority && task.priority !== 'none' && (
+                          <span
+                            className="badge badge-priority"
+                            style={{ background: PRIORITY[task.priority].color }}
+                          >
+                            {PRIORITY[task.priority].label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="task-actions">
+                      <button className="btn-icon" onClick={() => startEdit(task)} title="編集">✏️</button>
+                      <button className="btn-icon btn-icon-delete" onClick={() => deleteTask(task.id)} title="削除">🗑️</button>
+                    </div>
                   </>
                 )}
               </li>
