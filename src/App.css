@@ -7,247 +7,227 @@
 body {
   background: #f0f2f5;
   font-family: sans-serif;
+  min-height: 100vh;
 }
 
-.todo-app {
-  max-width: 540px;
-  margin: 60px auto;
+/* ===== レイアウト ===== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== サイドバー ===== */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
   background: #fff;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #e8e8e8;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 24px;
-  text-align: center;
+.sidebar h2 {
+  font-size: 1rem;
   color: #333;
+  font-weight: 700;
 }
 
-/* 入力エリア */
-.input-area {
+.sidebar-form {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
-.input-row {
-  display: flex;
-  gap: 8px;
+.sidebar-form label {
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
 }
 
-.input-row input {
-  flex: 1;
-  padding: 10px 14px;
+.sidebar-form input[type="text"],
+.sidebar-form input[type="date"],
+.sidebar-form select {
+  width: 100%;
+  padding: 8px 10px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 7px;
+  font-size: 0.88rem;
   outline: none;
+  background: #fff;
 }
 
-.input-row input:focus {
+.sidebar-form input[type="text"]:focus,
+.sidebar-form input[type="date"]:focus,
+.sidebar-form select:focus {
   border-color: #646cff;
 }
 
 .btn-add {
-  padding: 10px 18px;
+  margin-top: 8px;
+  padding: 10px;
   background: #646cff;
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
+  width: 100%;
+  transition: background 0.15s;
 }
 
 .btn-add:hover {
   background: #535bf2;
 }
 
-.input-meta {
+.sidebar-stats {
   display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-.meta-item input[type="date"],
-.meta-item select {
-  padding: 5px 8px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  outline: none;
-  cursor: pointer;
-  background: #fff;
-}
-
-.meta-item input[type="date"]:focus,
-.meta-item select:focus {
-  border-color: #646cff;
-}
-
-/* フィルター */
-.filter-row {
-  display: flex;
+  flex-direction: column;
   gap: 8px;
-  margin-bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }
 
-.filter-row button {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.filter-row button.active {
-  background: #646cff;
-  color: #fff;
-  border-color: #646cff;
-}
-
-/* グループ */
-.group {
-  margin-bottom: 20px;
-}
-
-.group-header {
+.stat-item {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 4px;
-  margin-bottom: 8px;
-  border-bottom: 2px solid #eee;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
 }
 
-.group.overdue .group-header {
-  border-bottom-color: #ff4d4f;
-}
-
-.group-icon {
-  font-size: 1rem;
-}
-
-.group-label {
-  flex: 1;
-  font-weight: bold;
-  font-size: 0.95rem;
+.stat-item span:last-child {
+  font-weight: 600;
   color: #333;
 }
 
-.group.overdue .group-label {
+.overdue-stat span:last-child {
   color: #ff4d4f;
 }
 
-.group-count {
-  font-size: 0.8rem;
-  color: #aaa;
+/* ===== ボード ===== */
+.board {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  overflow-x: auto;
+  align-items: flex-start;
 }
 
-/* タスク一覧 */
-.task-list {
+/* ===== カラム ===== */
+.column {
+  flex: 1;
+  min-width: 220px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background 0.15s, outline 0.15s;
+  min-height: 200px;
+}
+
+.column.drag-over {
+  background: #e6f4ff;
+  outline: 2px dashed #1890ff;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-top: 3px solid #ccc;
+  padding-top: 8px;
+  border-radius: 2px;
+}
+
+.column-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.column-count {
+  background: #e0e0e0;
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.column-empty {
+  text-align: center;
+  color: #bbb;
+  font-size: 0.85rem;
+  padding: 20px 0;
   list-style: none;
+}
+
+/* ===== タスクカード ===== */
+.task-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  list-style: none;
 }
 
-.task-list li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+.task-card {
+  background: #fff;
   border: 1px solid #eee;
-  border-left: 4px solid #ddd;
+  border-left: 4px solid #d9d9d9;
   border-radius: 8px;
-  background: #fafafa;
-  transition: box-shadow 0.15s;
-}
-
-.task-list li:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.task-list li.done {
-  opacity: 0.6;
-}
-
-.task-list li.overdue-task {
-  background: #fff1f0;
-  border-color: #ffccc7;
-  border-left-color: #ff4d4f;
-}
-
-.task-list li input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-/* タスク本体 */
-.task-body {
-  flex: 1;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  min-width: 0;
+  gap: 8px;
+  cursor: grab;
+  transition: box-shadow 0.15s, opacity 0.15s;
+}
+
+.task-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.task-card.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.task-card.overdue {
+  background: #fff1f0;
+  border-color: #ffccc7;
+}
+
+.task-card.due-today {
+  background: #fff7e6;
+  border-color: #ffe58f;
+}
+
+/* カード上部 */
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .task-text {
-  font-size: 0.95rem;
+  flex: 1;
+  font-size: 0.92rem;
   color: #333;
+  line-height: 1.4;
   word-break: break-word;
 }
 
-.task-list li.done .task-text {
-  text-decoration: line-through;
-  color: #aaa;
-}
-
-.task-meta {
+.card-icons {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-/* バッジ */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.badge-date {
-  background: #f0f0f0;
-  color: #555;
-}
-
-.badge-priority {
-  color: #fff;
-}
-
-/* アクションボタン */
-.task-actions {
-  display: flex;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
 }
 
@@ -255,10 +235,10 @@ h1 {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
-  padding: 4px;
-  border-radius: 6px;
-  opacity: 0.4;
+  font-size: 0.85rem;
+  padding: 3px 5px;
+  border-radius: 5px;
+  opacity: 0.3;
   transition: opacity 0.15s, background 0.15s;
 }
 
@@ -271,43 +251,109 @@ h1 {
   background: #fff1f0;
 }
 
-/* 編集フォーム */
-.edit-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.edit-form input[type="text"] {
-  width: 100%;
-  padding: 7px 10px;
-  border: 1px solid #646cff;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  outline: none;
-}
-
-.edit-meta {
+/* バッジ */
+.card-meta {
   display: flex;
   gap: 6px;
-  align-items: center;
   flex-wrap: wrap;
 }
 
-.edit-meta input[type="date"],
-.edit-meta select {
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.badge-date {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #e8e8e8;
+}
+
+.badge-date.overdue {
+  background: #fff1f0;
+  color: #ff4d4f;
+  border-color: #ffccc7;
+}
+
+.badge-date.due-today {
+  background: #fff7e6;
+  color: #d46b08;
+  border-color: #ffe58f;
+}
+
+.badge-priority {
+  color: #fff;
+}
+
+/* ステータスボタン */
+.card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-status {
+  flex: 1;
   padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-weight: 500;
+}
+
+.btn-prev {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-prev:hover {
+  background: #e0e0e0;
+}
+
+.btn-next {
+  background: #646cff;
+  color: #fff;
+}
+
+.btn-next:hover {
+  background: #535bf2;
+}
+
+/* ===== 編集フォーム ===== */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form input[type="text"],
+.edit-form input[type="date"],
+.edit-form select {
+  padding: 6px 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   outline: none;
-  background: #fff;
-  cursor: pointer;
+  width: 100%;
+}
+
+.edit-form input[type="text"] {
+  border-color: #646cff;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 6px;
 }
 
 .btn-save {
-  padding: 5px 12px;
+  flex: 1;
+  padding: 6px;
   background: #52c41a;
   color: #fff;
   border: none;
@@ -321,8 +367,9 @@ h1 {
 }
 
 .btn-cancel {
-  padding: 5px 12px;
-  background: #aaa;
+  flex: 1;
+  padding: 6px;
+  background: #bbb;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -331,19 +378,5 @@ h1 {
 }
 
 .btn-cancel:hover {
-  background: #888;
-}
-
-.empty {
-  text-align: center;
-  color: #aaa;
-  padding: 20px 0;
-  font-size: 0.95rem;
-}
-
-.count {
-  text-align: right;
-  color: #888;
-  font-size: 0.9rem;
-  margin-top: 8px;
+  background: #999;
 }
